@@ -3,23 +3,28 @@
 namespace App\Controller;
 
 
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Twig\Environment;
 
 class ArticleController extends AbstractController
 {
 
     /**
-     * @Route("/")
+     * @Route("/", name="app_homepage")
      */
     public function homepage()
     {
-        return new Response('OMG! My first page already! Woo!');
+        return $this->render('article/homepage.html.twig');
     }
 
     /**
-     * @Route("/news/{slug}")
+     * @Route("/news/{slug}", name="article_show")
+     * @param $slug
+     * @return Response
      */
     public function show($slug)
     {
@@ -31,7 +36,20 @@ class ArticleController extends AbstractController
 
         return $this->render('article/show.html.twig',[
             'title' => ucwords(str_replace('-', ' ', $slug)),
-            'comments' => $comments
+            'comments' => $comments,
+            'slug' => $slug
         ]);
+    }
+
+    /**
+     * @Route("/news/{slug}/heart", name="article_toggle_heart", methods={"POST"})
+     */
+    public function toggleArticleHeart($slug, LoggerInterface $logger)
+    {
+        //TODO - actually heart/unheart the article
+
+        $logger->info('Article is being heart-ed!');
+
+        return new JsonResponse(['hearts' => rand(5,100)]);
     }
 }
