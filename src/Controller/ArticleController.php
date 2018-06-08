@@ -3,12 +3,16 @@
 namespace App\Controller;
 
 
+use App\Entity\Article;
+use App\Repository\ArticleRepository;
+use Doctrine\ORM\EntityManager;
+use Michelf\MarkdownInterface;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Twig\Environment;
 
 class ArticleController extends AbstractController
 {
@@ -18,7 +22,10 @@ class ArticleController extends AbstractController
      */
     public function homepage()
     {
-        return $this->render('article/homepage.html.twig');
+        $articles = $this->getDoctrine()->getRepository(Article::class)->findAll();
+        return $this->render('article/homepage.html.twig',[
+            'articles' => $articles
+        ]);
     }
 
     /**
@@ -28,15 +35,13 @@ class ArticleController extends AbstractController
      */
     public function show($slug)
     {
-        $comments = [
-            'I ate a normal rock once. It did NOT taste like bacon!',
-            'Woohoo! I\'m going on an all-asteroid diet!',
-            'I like bacon too! Buy some from my site! bakinsomebacon.com'
-        ];
+        /** @var ArticleRepository $articleRepo */
+        $articleRepo = $this->getDoctrine()->getRepository(Article::class);
+        /** @var Article $article | null */
+        $article = $articleRepo->findOneBy(['slug' => $slug]);
 
         return $this->render('article/show.html.twig',[
-            'title' => ucwords(str_replace('-', ' ', $slug)),
-            'comments' => $comments,
+            'article' => $article,
             'slug' => $slug
         ]);
     }
